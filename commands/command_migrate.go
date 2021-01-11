@@ -31,6 +31,11 @@ var (
 	// of updated references.
 	migrateSkipFetch bool
 
+	// migrateImportAboveFmt indicates the presence of the --above=<size>
+	// flag and instructs 'git lfs migrate import' to import all files
+	// above the provided size.
+	migrateImportAboveFmt string
+
 	// migrateEverything indicates the presence of the --everything flag,
 	// and instructs 'git lfs migrate' to migrate all local references.
 	migrateEverything bool
@@ -61,7 +66,7 @@ var (
 // migrate takes the given command and arguments, *gitobj.ObjectDatabase, as well
 // as a BlobRewriteFn to apply, and performs a migration.
 func migrate(args []string, r *githistory.Rewriter, l *tasklog.Logger, opts *githistory.RewriteOptions) {
-	requireInRepo()
+	setupRepository()
 
 	opts, err := rewriteOptions(args, opts, l)
 	if err != nil {
@@ -365,6 +370,7 @@ func init() {
 	info.Flags().StringVar(&migrateInfoUnitFmt, "unit", "", "--unit=<unit>")
 
 	importCmd := NewCommand("import", migrateImportCommand)
+	importCmd.Flags().StringVar(&migrateImportAboveFmt, "above", "", "--above=<n>")
 	importCmd.Flags().BoolVar(&migrateVerbose, "verbose", false, "Verbose logging")
 	importCmd.Flags().StringVar(&objectMapFilePath, "object-map", "", "Object map file")
 	importCmd.Flags().BoolVar(&migrateNoRewrite, "no-rewrite", false, "Add new history without rewriting previous")
